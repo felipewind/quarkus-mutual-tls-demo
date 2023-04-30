@@ -15,20 +15,28 @@ Quarkus mutual Transport Layer Security (TLS) example - Truststore and Keystore 
 keytool -genkeypair -storepass server-password -keyalg RSA -keysize 2048 -dname "CN=server" -alias server -ext "SAN:c=DNS:localhost,IP:127.0.0.1" -validity 365000 -keystore server/server.keystore
 ```
 
-## Client Certificate 
+## Client "A" Certificate 
 ```
 keytool -genkeypair -storepass client-password -keyalg RSA -keysize 2048 -dname "CN=client" -alias client -ext "SAN:c=DNS:localhost,IP:127.0.0.1" -validity 365000 -keystore client/client.keystore
 ```
 
-## Server accepted Client Certificates
+## Client "B" Certificate 
+```
+keytool -genkeypair -storepass client-b-password -keyalg RSA -keysize 2048 -dname "CN=client" -alias client-b -ext "SAN:c=DNS:localhost,IP:127.0.0.1" -validity 365000 -keystore client/client-b.keystore
+```
 
+## Clients that are authorized to access server
 ```
-keytool -importkeystore -srckeystore existing_keystore.jks -destkeystore new_keystore.jks -deststoretype JKS -deststorepass new_keystore_password -srcstorepass existing_keystore_password
+keytool -genkeypair -storepass authorized-clients-password -keyalg RSA -keysize 2048 -dname "CN=client" -alias authorized-clients -ext "SAN:c=DNS:localhost,IP:127.0.0.1" -validity 365000 -keystore authorized-clients.jks
 ```
+## Command to add a JKS file into an existing JKS file
 
-```
-keytool -importkeystore -srckeystore existing_keystore.jks -destkeystore new_keystore.jks -deststoretype JKS -deststorepass new_keystore_password -srcstorepass existing_keystore_password
-```
+keytool -importkeystore -srckeystore client/client.keystore -destkeysore authorized-clients.jks
+
+keytool -importkeystore -srckeystore client/client.keystore -srcstorepass client-password -destkeystore authorized-clients.jks -deststorepass authorized-clients-password
+
+keytool -importkeystore -srckeystore client/client-b.keystore -srcstorepass client-b-password -destkeystore authorized-clients.jks -deststorepass authorized-clients-password
+
 
 ## Create Client Trust Store 
 
