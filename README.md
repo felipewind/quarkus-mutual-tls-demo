@@ -2,7 +2,30 @@
 
 Demonstration project to configure Transport Layer Security (TLS) on Quarkus' server an client applications.
 
-# TLS
+In this project I explain the concepts of https, tls and mutual tls.
+
+Then, I execute a few tests showing how to configure one Quarkus's server and client applications to use mutual tls.
+
+- [Concepts](#concepts)
+- [Certificate Generation](#certificate-generation)
+- [Test - Server with certificate and client without truststore configured](#test---server-with-certificate-and-client-without-truststore-configured)
+- [Test - Server with certificate and client with truststore configured](#test---server-with-certificate-and-client-with-truststore-configured)
+- [Test - Server with mutual TLS and client don't inform identity](#test---server-with-mutual-tls-and-client-dont-inform-identity)
+- [Test - Server with mutual TLS and client inform its certificate](#test---server-with-mutual-tls-and-client-inform-its-certificate)
+- [Credits](#credits)
+
+
+# Concepts
+
+## HTTPS
+
+> HTTPS stands for Hypertext Transfer Protocol Secure, which is a protocol used to establish a secure and encrypted connection between a web browser (or other client) and a web server.
+> When you connect to a website using HTTPS, your browser and the server exchange cryptographic keys to establish a secure connection. This ensures that any data transmitted between the client and server is encrypted and protected from interception or tampering.[^3]
+
+To estabilish a https connection, the server must have a server certificate. When the client access the server, it receives the server certificate and check if this certificate is valid and issued by a trusted Certificate Authority (CA).
+
+
+## TLS
 
 > Transport Layer Security (TLS) is a cryptographic protocol designed to provide communications security over a computer network. The protocol is widely used in applications such as email, instant messaging, and voice over IP, but its use in **securing HTTPS** remains the most publicly visible.[^1]
 
@@ -10,81 +33,93 @@ Demonstration project to configure Transport Layer Security (TLS) on Quarkus' se
 
 **Mutual TLS** occurs when the client requires identification from the server and the server requires identification from the client as well.
 
-# HTTPS
-
-> HTTPS stands for Hypertext Transfer Protocol Secure, which is a protocol used to establish a secure and encrypted connection between a web browser (or other client) and a web server.
-> When you connect to a website using HTTPS, your browser and the server exchange cryptographic keys to establish a secure connection. This ensures that any data transmitted between the client and server is encrypted and protected from interception or tampering.
-
-To estabilish a https connection, the server must have a server certificate. When the client access the server, it receives the server certificate and check if this certificate is valid and issued by a trusted Certificate Authority (CA).
 
 
+# Certificate generation
 
-# Certificate and Trustore generation
+Let's generate the server and clients certificates.
 
+Then we will create a single keystore containing all client certificates.
 
+The files are already on the project, if you wan't to execute the `keytool` commands, first delete the files.
+
+Execute the following commands on the [root folder of the project](./).
 
 ## Server Certificate 
 ```
-keytool -genkeypair -storepass server-password -keyalg RSA -keysize 2048 -dname "CN=server" -alias server -ext "SAN:c=DNS:localhost,IP:127.0.0.1" -validity 365000 -keystore server/server.keystore
+keytool -genkeypair -storepass server-password -keyalg RSA -keysize 2048 -dname "CN=server" -alias server -ext "SAN:c=DNS:localhost,IP:127.0.0.1" -validity 365000 -keystore server/server-keystore.jks
 ```
 
 ## Client "A" Certificate 
 ```
-keytool -genkeypair -storepass client-password -keyalg RSA -keysize 2048 -dname "CN=client" -alias client -ext "SAN:c=DNS:localhost,IP:127.0.0.1" -validity 365000 -keystore client/client.keystore
+keytool -genkeypair -storepass client-a-password -keyalg RSA -keysize 2048 -dname "CN=client" -alias client -ext "SAN:c=DNS:localhost,IP:127.0.0.1" -validity 365000 -keystore client/client-a-keystore.jks
 ```
 
 ## Client "B" Certificate 
 ```
-keytool -genkeypair -storepass client-b-password -keyalg RSA -keysize 2048 -dname "CN=client" -alias client-b -ext "SAN:c=DNS:localhost,IP:127.0.0.1" -validity 365000 -keystore client/client-b.keystore
+keytool -genkeypair -storepass client-b-password -keyalg RSA -keysize 2048 -dname "CN=client" -alias client-b -ext "SAN:c=DNS:localhost,IP:127.0.0.1" -validity 365000 -keystore client/client-b-keystore.jks
 ```
 
-## Clients that are authorized to access server
+## Create the server truststore
+
+Create the server truststore file containing all the client keystores.
+
+Generating a server truststore file:
 ```
-keytool -genkeypair -storepass authorized-clients-password -keyalg RSA -keysize 2048 -dname "CN=client" -alias authorized-clients -ext "SAN:c=DNS:localhost,IP:127.0.0.1" -validity 365000 -keystore authorized-clients.jks
-```
-## Command to add a JKS file into an existing JKS file
-
-keytool -importkeystore -srckeystore client/client.keystore -destkeysore authorized-clients.jks
-
-keytool -importkeystore -srckeystore client/client.keystore -srcstorepass client-password -destkeystore authorized-clients.jks -deststorepass authorized-clients-password
-
-keytool -importkeystore -srckeystore client/client-b.keystore -srcstorepass client-b-password -destkeystore authorized-clients.jks -deststorepass authorized-clients-password
-
-
-## Create Client Trust Store 
-
-```
-cp server/server.keystore client/client.truststore
+keytool -genkeypair -storepass authorized-clients-password -keyalg RSA -keysize 2048 -dname "CN=client" -alias authorized-clients -ext "SAN:c=DNS:localhost,IP:127.0.0.1" -validity 365000 -keystore server/server-truststore-clients.jks
 ```
 
-## Create Server Trust Store 
+Adding keystore from client "A" to server truststore:
+```shell
+keytool -importkeystore -srckeystore client/client-a-keystore.jks -srcstorepass client-a-password -destkeystore server/server-truststore-clients.jks -deststorepass authorized-clients-password
+```
+
+Adding keystore from client "B" to server truststore:
+```shell
+keytool -importkeystore -srckeystore client/client-b-keystore.jks -srcstorepass client-b-password -destkeystore server/server-truststore-clients.jks -deststorepass authorized-clients-password
+```
+
+## Create the client truststore
 
 ```
-cp client/client.keystore server/server.truststore
+cp server/server-keystore.jks client/client-truststore.jks
 ```
 
 
+# Test - Server with certificate and client without truststore configured
 
-# Test cenarios
+In this cenario, the server only accepts https connections, but the server certificate isn't present in the client trustore Certificate Authorite control.
 
-## Server with TLS Key Store configured and Client without the Trust Store configured
-
-When we enable TLS on the server side:
+Enabling TLS on the server side:
 ```properties
-# Demand https request
-quarkus.http.insecure-requests=redirect
+# Disallowing http access
+quarkus.http.insecure-requests=disabled
 
 # Configure https port
 quarkus.http.ssl-port=8445
 
 # Server Certificate
-quarkus.http.ssl.certificate.key-store-file=./server.keystore
+quarkus.http.ssl.certificate.key-store-file=./server-keystore.jks
 quarkus.http.ssl.certificate.key-store-password=server-password
 ```
 
-### From Quarkus Client
+Start server:
+- Enter the [server folder](./server/)
+- Execute `$ ./mvnw quarkus:dev`
 
-And try to access this endpoint from the client without the Trust Store configuration, we receive this error:
+
+## Test from Quarkus Client
+
+Start client:
+- Enter the [client folder](./client/)
+- Execute `$ ./mvnw quarkus:dev`
+
+Execute client endpoint that consumes server endpoint:
+```
+$ curl localhost:8080/hello
+```
+
+Try to access this endpoint from the client without the Trust Store configuration, we receive this error:
 ```
 jakarta.ws.rs.ProcessingException: javax.net.ssl.SSLHandshakeException: Failed to create SSL connection
 ...
@@ -98,7 +133,7 @@ Caused by: sun.security.validator.ValidatorException: PKIX path building failed:
 Caused by: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target
 ```
 
-### From curl
+## Test from curl
 ```
 $ curl -v https://localhost:8445
 *   Trying 127.0.0.1:8445...
@@ -127,30 +162,206 @@ establish a secure connection to it. To learn more about this situation and
 how to fix it, please visit the web page mentioned above.
 ```
 
-## Server with TLS and Client without the Trust Store configured
-
-
-## Server with TLS Key Store configured and Client with the Trust Store configured
-
-
-## Server with TLS Key Store configured and demanding identification from the client
-
+## Test from curl allowing insecure server connections
 ```
-# Demand https request
-quarkus.http.insecure-requests=redirect
+$ curl -vk https://localhost:8445/hello
+*   Trying 127.0.0.1:8445...
+* Connected to localhost (127.0.0.1) port 8445 (#0)
+* ALPN, offering h2
+* ALPN, offering http/1.1
+* TLSv1.0 (OUT), TLS header, Certificate Status (22):
+* TLSv1.3 (OUT), TLS handshake, Client hello (1):
+* TLSv1.2 (IN), TLS header, Certificate Status (22):
+* TLSv1.3 (IN), TLS handshake, Server hello (2):
+* TLSv1.2 (IN), TLS header, Finished (20):
+* TLSv1.2 (IN), TLS header, Supplemental data (23):
+* TLSv1.3 (IN), TLS handshake, Encrypted Extensions (8):
+* TLSv1.3 (IN), TLS handshake, Certificate (11):
+* TLSv1.3 (IN), TLS handshake, CERT verify (15):
+* TLSv1.3 (IN), TLS handshake, Finished (20):
+* TLSv1.2 (OUT), TLS header, Finished (20):
+* TLSv1.3 (OUT), TLS change cipher, Change cipher spec (1):
+* TLSv1.2 (OUT), TLS header, Supplemental data (23):
+* TLSv1.3 (OUT), TLS handshake, Finished (20):
+* SSL connection using TLSv1.3 / TLS_AES_256_GCM_SHA384
+* ALPN, server accepted to use h2
+* Server certificate:
+*  subject: CN=server
+*  start date: May  1 14:20:59 2023 GMT
+*  expire date: Sep  1 14:20:59 3022 GMT
+*  issuer: CN=server
+*  SSL certificate verify result: self-signed certificate (18), continuing anyway.
+* Using HTTP2, server supports multiplexing
+* Connection state changed (HTTP/2 confirmed)
+* Copying HTTP/2 data in stream buffer to connection buffer after upgrade: len=0
+* TLSv1.2 (OUT), TLS header, Supplemental data (23):
+* TLSv1.2 (OUT), TLS header, Supplemental data (23):
+* TLSv1.2 (OUT), TLS header, Supplemental data (23):
+* Using Stream ID: 1 (easy handle 0x55b554cfc560)
+* TLSv1.2 (OUT), TLS header, Supplemental data (23):
+> GET /hello HTTP/2
+> Host: localhost:8445
+> user-agent: curl/7.81.0
+> accept: */*
+>
+* TLSv1.2 (IN), TLS header, Supplemental data (23):
+* TLSv1.3 (IN), TLS handshake, Newsession Ticket (4):
+* TLSv1.2 (IN), TLS header, Supplemental data (23):
+* TLSv1.2 (OUT), TLS header, Supplemental data (23):
+* TLSv1.2 (IN), TLS header, Supplemental data (23):
+* TLSv1.2 (IN), TLS header, Supplemental data (23):
+< HTTP/2 200
+< content-length: 17
+< content-type: text/plain;charset=UTF-8
+<
+* TLSv1.2 (IN), TLS header, Supplemental data (23):
+* Connection #0 to host localhost left intact
+Hello from server
+```
+
+
+# Test - Server with certificate and client with truststore configured
+
+Configure client truststore:
+```
+# Rest client specific Trust Store
+quarkus.rest-client.server-api.trust-store=./client-truststore.jks
+quarkus.rest-client.server-api.trust-store-password=server-password
+```
+
+## Test from Quarkus Client
+
+Start client:
+- Enter the [client folder](./client/)
+- Execute `$ ./mvnw quarkus:dev`
+
+Execute client endpoint that consumes server endpoint:
+```
+$ curl localhost:8080/hello
+
+Hello from server
+```
+
+# Test - Server with mutual TLS and client don't inform identity
+
+Include requiring of client identification (`quarkus.http.ssl.client-auth`) and the truststore of the server, that are the identities that the server will trust:
+```properties
+# Disallowing http access
+quarkus.http.insecure-requests=disabled
 
 # Configure https port
 quarkus.http.ssl-port=8445
 
 # Server Certificate
-quarkus.http.ssl.certificate.key-store-file=./server.keystore
+quarkus.http.ssl.certificate.key-store-file=./server-keystore.jks
 quarkus.http.ssl.certificate.key-store-password=server-password
 
-# Server Client Authentication
+# Require client identification
 quarkus.http.ssl.client-auth=required
-quarkus.http.ssl.certificate.trust-store-file=./server.truststore
-quarkus.http.ssl.certificate.trust-store-password=client-password
+quarkus.http.ssl.certificate.trust-store-file=./server-truststore-clients.jks
+quarkus.http.ssl.certificate.trust-store-password=authorized-clients-password
 ```
+
+Start server:
+- Enter the [server folder](./server/)
+- Execute `$ ./mvnw quarkus:dev`
+
+## Test from Quarkus Client
+
+Start client:
+- Enter the [client folder](./client/)
+- Execute `$ ./mvnw quarkus:dev`
+
+Execute client endpoint that consumes server endpoint:
+```
+$ curl localhost:8080/hello
+
+io.netty.handler.codec.DecoderException: javax.net.ssl.SSLHandshakeException: Received fatal alert: bad_certificate
+...
+Caused by: javax.net.ssl.SSLHandshakeException: Received fatal alert: bad_certificate
+```
+
+## Test from curl
+```
+$ curl -vk https://localhost:8445
+*   Trying 127.0.0.1:8445...
+* Connected to localhost (127.0.0.1) port 8445 (#0)
+* ALPN, offering h2
+* ALPN, offering http/1.1
+* TLSv1.0 (OUT), TLS header, Certificate Status (22):
+* TLSv1.3 (OUT), TLS handshake, Client hello (1):
+* TLSv1.2 (IN), TLS header, Certificate Status (22):
+* TLSv1.3 (IN), TLS handshake, Server hello (2):
+* TLSv1.2 (IN), TLS header, Finished (20):
+* TLSv1.2 (IN), TLS header, Supplemental data (23):
+* TLSv1.3 (IN), TLS handshake, Encrypted Extensions (8):
+* TLSv1.3 (IN), TLS handshake, Request CERT (13):
+* TLSv1.3 (IN), TLS handshake, Certificate (11):
+* TLSv1.3 (IN), TLS handshake, CERT verify (15):
+* TLSv1.3 (IN), TLS handshake, Finished (20):
+* TLSv1.2 (OUT), TLS header, Finished (20):
+* TLSv1.3 (OUT), TLS change cipher, Change cipher spec (1):
+* TLSv1.2 (OUT), TLS header, Supplemental data (23):
+* TLSv1.3 (OUT), TLS handshake, Certificate (11):
+* TLSv1.2 (OUT), TLS header, Supplemental data (23):
+* TLSv1.3 (OUT), TLS handshake, Finished (20):
+* SSL connection using TLSv1.3 / TLS_AES_256_GCM_SHA384
+* ALPN, server accepted to use h2
+* Server certificate:
+*  subject: CN=server
+*  start date: May  1 14:20:59 2023 GMT
+*  expire date: Sep  1 14:20:59 3022 GMT
+*  issuer: CN=server
+*  SSL certificate verify result: self-signed certificate (18), continuing anyway.
+* Using HTTP2, server supports multiplexing
+* Connection state changed (HTTP/2 confirmed)
+* Copying HTTP/2 data in stream buffer to connection buffer after upgrade: len=0
+* TLSv1.2 (OUT), TLS header, Supplemental data (23):
+* TLSv1.2 (OUT), TLS header, Supplemental data (23):
+* TLSv1.2 (OUT), TLS header, Supplemental data (23):
+* Using Stream ID: 1 (easy handle 0x55d9aed1b560)
+* TLSv1.2 (OUT), TLS header, Supplemental data (23):
+> GET / HTTP/2
+> Host: localhost:8445
+> user-agent: curl/7.81.0
+> accept: */*
+>
+* TLSv1.2 (IN), TLS header, Supplemental data (23):
+* TLSv1.3 (IN), TLS alert, bad certificate (554):
+* OpenSSL SSL_read: error:0A000412:SSL routines::sslv3 alert bad certificate, errno 0
+* Failed receiving HTTP2 data
+* OpenSSL SSL_write: SSL_ERROR_ZERO_RETURN, errno 0
+* Failed sending HTTP2 data
+* Connection #0 to host localhost left intact
+curl: (56) OpenSSL SSL_read: error:0A000412:SSL routines::sslv3 alert bad certificate, errno 0
+```
+
+# Test - Server with mutual TLS and client inform its certificate
+
+Add the client certificate:
+```properties
+# Rest client specific Trust Store
+quarkus.rest-client.server-api.trust-store=./client-truststore.jks
+quarkus.rest-client.server-api.trust-store-password=server-password
+
+# Rest Client specific Key Store
+quarkus.rest-client.server-api.key-store=./client-a-keystore.jks
+quarkus.rest-client.server-api.key-store-password=client-a-password
+```
+
+Start client:
+- Enter the [client folder](./client/)
+- Execute `$ ./mvnw quarkus:dev`
+
+Execute client endpoint that consumes server endpoint:
+```
+$ curl localhost:8080/hello
+
+Hello from server
+```
+
+You can add any of the client keystores that are on the truststore of the server, that are `client-a-keystore.jks (client-a-password)` or `client-b-keystore.jks (client-b-password)`.
+
 
 
 # Credits
@@ -161,7 +372,10 @@ https://quarkus.io/blog/quarkus-mutual-tls/
 
 https://quarkus.io/guides/http-reference
 
+# Footnotes
+
 [^1]: https://en.wikipedia.org/wiki/Transport_Layer_Security
 
 [^2]: https://www.digicert.com/tls-ssl/tls-ssl-certificates#:~:text=Transport%20Layer%20Security%20(TLS)%20certificates,visiting%2C%20and%20the%20website%20server.
 
+[^3]: https://chat.openai.com/
