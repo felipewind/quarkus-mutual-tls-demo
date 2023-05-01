@@ -1,4 +1,4 @@
-# quarkus-tls-demo
+# Quarkus TLS Demo
 
 Demonstration project that shows how to configure Transport Layer Security (TLS) on Quarkus server and Quarkus client applications.
 
@@ -8,6 +8,7 @@ First, I explain the concepts of `https`, `tls` and `mutual tls`.
 
 Then, I execute a few tests showing step by step how we configure and what are the problems that occur when we don't configure the applications properly.
 
+Index:
 - [Concepts](#concepts)
 - [Certificate Generation](#certificate-generation)
 - Tests:
@@ -16,6 +17,8 @@ Then, I execute a few tests showing step by step how we configure and what are t
   - [Server with mutual TLS and client don't inform identity](#test---server-with-mutual-tls-and-client-dont-inform-identity)
   - [Server with mutual TLS and client inform its certificate](#test---server-with-mutual-tls-and-client-inform-its-certificate)
 - [Credits](#credits)
+
+![diagram](./mutual-tls.jpg)
 
 
 ## Concepts
@@ -50,17 +53,17 @@ Execute the following commands on the [root folder of the project](./).
 
 ### Server Certificate 
 ```
-keytool -genkeypair -storepass server-password -keyalg RSA -keysize 2048 -dname "CN=server" -alias server -ext "SAN:c=DNS:localhost,IP:127.0.0.1" -validity 365000 -keystore server/server-keystore.jks
+$ keytool -genkeypair -storepass server-password -keyalg RSA -keysize 2048 -dname "CN=server" -alias server -ext "SAN:c=DNS:localhost,IP:127.0.0.1" -validity 365000 -keystore server/server-keystore.jks
 ```
 
 ### Client "A" Certificate 
 ```
-keytool -genkeypair -storepass client-a-password -keyalg RSA -keysize 2048 -dname "CN=client" -alias client -ext "SAN:c=DNS:localhost,IP:127.0.0.1" -validity 365000 -keystore client/client-a-keystore.jks
+$ keytool -genkeypair -storepass client-a-password -keyalg RSA -keysize 2048 -dname "CN=client" -alias client -ext "SAN:c=DNS:localhost,IP:127.0.0.1" -validity 365000 -keystore client/client-a-keystore.jks
 ```
 
 ### Client "B" Certificate 
 ```
-keytool -genkeypair -storepass client-b-password -keyalg RSA -keysize 2048 -dname "CN=client" -alias client-b -ext "SAN:c=DNS:localhost,IP:127.0.0.1" -validity 365000 -keystore client/client-b-keystore.jks
+$ keytool -genkeypair -storepass client-b-password -keyalg RSA -keysize 2048 -dname "CN=client" -alias client-b -ext "SAN:c=DNS:localhost,IP:127.0.0.1" -validity 365000 -keystore client/client-b-keystore.jks
 ```
 
 ### Create the server truststore
@@ -69,23 +72,23 @@ Create the server truststore file containing all the client keystores.
 
 Generating a server truststore file:
 ```
-keytool -genkeypair -storepass authorized-clients-password -keyalg RSA -keysize 2048 -dname "CN=client" -alias authorized-clients -ext "SAN:c=DNS:localhost,IP:127.0.0.1" -validity 365000 -keystore server/server-truststore-clients.jks
+$ keytool -genkeypair -storepass authorized-clients-password -keyalg RSA -keysize 2048 -dname "CN=client" -alias authorized-clients -ext "SAN:c=DNS:localhost,IP:127.0.0.1" -validity 365000 -keystore server/server-truststore-clients.jks
 ```
 
 Adding keystore from client "A" to server truststore:
 ```shell
-keytool -importkeystore -srckeystore client/client-a-keystore.jks -srcstorepass client-a-password -destkeystore server/server-truststore-clients.jks -deststorepass authorized-clients-password
+$ keytool -importkeystore -srckeystore client/client-a-keystore.jks -srcstorepass client-a-password -destkeystore server/server-truststore-clients.jks -deststorepass authorized-clients-password
 ```
 
 Adding keystore from client "B" to server truststore:
 ```shell
-keytool -importkeystore -srckeystore client/client-b-keystore.jks -srcstorepass client-b-password -destkeystore server/server-truststore-clients.jks -deststorepass authorized-clients-password
+$ keytool -importkeystore -srckeystore client/client-b-keystore.jks -srcstorepass client-b-password -destkeystore server/server-truststore-clients.jks -deststorepass authorized-clients-password
 ```
 
-## Create the client truststore
+### Create the client truststore
 
 ```
-cp server/server-keystore.jks client/client-truststore.jks
+$ cp server/server-keystore.jks client/client-truststore.jks
 ```
 
 
@@ -223,7 +226,7 @@ Hello from server
 ```
 
 
-@# Test - Server with certificate and client with truststore configured
+## Test - Server with certificate and client with truststore configured
 
 Configure client truststore:
 ```properties
@@ -375,7 +378,6 @@ https://quarkus.io/blog/quarkus-mutual-tls/
 
 https://quarkus.io/guides/http-reference
 
-## Footnotes
 
 [^1]: https://chat.openai.com/
 
