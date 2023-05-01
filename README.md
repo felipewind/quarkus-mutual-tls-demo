@@ -1,4 +1,4 @@
-# Quarkus TLS Demo
+# Quarkus Mutual TLS Demo
 
 Demonstration project that shows how to configure Transport Layer Security (TLS) on Quarkus server and Quarkus client applications.
 
