@@ -161,7 +161,7 @@ https://quarkus.io/blog/quarkus-mutual-tls/
 
 https://quarkus.io/guides/http-reference
 
-[^1]: Wikipedia https://en.wikipedia.org/wiki/Transport_Layer_Security
+[^1]: https://en.wikipedia.org/wiki/Transport_Layer_Security
 
-[^2]: Digicert https://www.digicert.com/tls-ssl/tls-ssl-certificates#:~:text=Transport%20Layer%20Security%20(TLS)%20certificates,visiting%2C%20and%20the%20website%20server.
+[^2]: https://www.digicert.com/tls-ssl/tls-ssl-certificates#:~:text=Transport%20Layer%20Security%20(TLS)%20certificates,visiting%2C%20and%20the%20website%20server.
 
