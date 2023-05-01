@@ -8,7 +8,7 @@ First, I explain the concepts of `https`, `tls` and `mutual tls`.
 
 Then, I execute a few tests showing step by step how we configure and what are the problems that occur when we don't configure the applications properly.
 
-## Index
+### Index
 - [Concepts](#concepts)
 - [Certificate Generation](#certificate-generation)
 - Tests:
