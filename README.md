@@ -141,25 +141,7 @@ Caused by: sun.security.provider.certpath.SunCertPathBuilderException: unable to
 
 ### Test from curl
 ```
-$ curl -v https://localhost:8445
-*   Trying 127.0.0.1:8445...
-* Connected to localhost (127.0.0.1) port 8445 (#0)
-* ALPN, offering h2
-* ALPN, offering http/1.1
-*  CAfile: /etc/ssl/certs/ca-certificates.crt
-*  CApath: /etc/ssl/certs
-* TLSv1.0 (OUT), TLS header, Certificate Status (22):
-* TLSv1.3 (OUT), TLS handshake, Client hello (1):
-* TLSv1.2 (IN), TLS header, Certificate Status (22):
-* TLSv1.3 (IN), TLS handshake, Server hello (2):
-* TLSv1.2 (IN), TLS header, Finished (20):
-* TLSv1.2 (IN), TLS header, Supplemental data (23):
-* TLSv1.3 (IN), TLS handshake, Encrypted Extensions (8):
-* TLSv1.3 (IN), TLS handshake, Certificate (11):
-* TLSv1.2 (OUT), TLS header, Unknown (21):
-* TLSv1.3 (OUT), TLS alert, unknown CA (560):
-* SSL certificate problem: self-signed certificate
-* Closing connection 0
+$ curl https://localhost:8445
 curl: (60) SSL certificate problem: self-signed certificate
 More details here: https://curl.se/docs/sslcerts.html
 
@@ -170,58 +152,8 @@ how to fix it, please visit the web page mentioned above.
 
 ### Test from curl allowing insecure server connections
 ```
-$ curl -vk https://localhost:8445/hello
-*   Trying 127.0.0.1:8445...
-* Connected to localhost (127.0.0.1) port 8445 (#0)
-* ALPN, offering h2
-* ALPN, offering http/1.1
-* TLSv1.0 (OUT), TLS header, Certificate Status (22):
-* TLSv1.3 (OUT), TLS handshake, Client hello (1):
-* TLSv1.2 (IN), TLS header, Certificate Status (22):
-* TLSv1.3 (IN), TLS handshake, Server hello (2):
-* TLSv1.2 (IN), TLS header, Finished (20):
-* TLSv1.2 (IN), TLS header, Supplemental data (23):
-* TLSv1.3 (IN), TLS handshake, Encrypted Extensions (8):
-* TLSv1.3 (IN), TLS handshake, Certificate (11):
-* TLSv1.3 (IN), TLS handshake, CERT verify (15):
-* TLSv1.3 (IN), TLS handshake, Finished (20):
-* TLSv1.2 (OUT), TLS header, Finished (20):
-* TLSv1.3 (OUT), TLS change cipher, Change cipher spec (1):
-* TLSv1.2 (OUT), TLS header, Supplemental data (23):
-* TLSv1.3 (OUT), TLS handshake, Finished (20):
-* SSL connection using TLSv1.3 / TLS_AES_256_GCM_SHA384
-* ALPN, server accepted to use h2
-* Server certificate:
-*  subject: CN=server
-*  start date: May  1 14:20:59 2023 GMT
-*  expire date: Sep  1 14:20:59 3022 GMT
-*  issuer: CN=server
-*  SSL certificate verify result: self-signed certificate (18), continuing anyway.
-* Using HTTP2, server supports multiplexing
-* Connection state changed (HTTP/2 confirmed)
-* Copying HTTP/2 data in stream buffer to connection buffer after upgrade: len=0
-* TLSv1.2 (OUT), TLS header, Supplemental data (23):
-* TLSv1.2 (OUT), TLS header, Supplemental data (23):
-* TLSv1.2 (OUT), TLS header, Supplemental data (23):
-* Using Stream ID: 1 (easy handle 0x55b554cfc560)
-* TLSv1.2 (OUT), TLS header, Supplemental data (23):
-> GET /hello HTTP/2
-> Host: localhost:8445
-> user-agent: curl/7.81.0
-> accept: */*
->
-* TLSv1.2 (IN), TLS header, Supplemental data (23):
-* TLSv1.3 (IN), TLS handshake, Newsession Ticket (4):
-* TLSv1.2 (IN), TLS header, Supplemental data (23):
-* TLSv1.2 (OUT), TLS header, Supplemental data (23):
-* TLSv1.2 (IN), TLS header, Supplemental data (23):
-* TLSv1.2 (IN), TLS header, Supplemental data (23):
-< HTTP/2 200
-< content-length: 17
-< content-type: text/plain;charset=UTF-8
-<
-* TLSv1.2 (IN), TLS header, Supplemental data (23):
-* Connection #0 to host localhost left intact
+$ curl -k https://localhost:8445/hello
+
 Hello from server
 ```
 
@@ -289,56 +221,8 @@ Caused by: javax.net.ssl.SSLHandshakeException: Received fatal alert: bad_certif
 
 ### Test from curl
 ```
-$ curl -vk https://localhost:8445
-*   Trying 127.0.0.1:8445...
-* Connected to localhost (127.0.0.1) port 8445 (#0)
-* ALPN, offering h2
-* ALPN, offering http/1.1
-* TLSv1.0 (OUT), TLS header, Certificate Status (22):
-* TLSv1.3 (OUT), TLS handshake, Client hello (1):
-* TLSv1.2 (IN), TLS header, Certificate Status (22):
-* TLSv1.3 (IN), TLS handshake, Server hello (2):
-* TLSv1.2 (IN), TLS header, Finished (20):
-* TLSv1.2 (IN), TLS header, Supplemental data (23):
-* TLSv1.3 (IN), TLS handshake, Encrypted Extensions (8):
-* TLSv1.3 (IN), TLS handshake, Request CERT (13):
-* TLSv1.3 (IN), TLS handshake, Certificate (11):
-* TLSv1.3 (IN), TLS handshake, CERT verify (15):
-* TLSv1.3 (IN), TLS handshake, Finished (20):
-* TLSv1.2 (OUT), TLS header, Finished (20):
-* TLSv1.3 (OUT), TLS change cipher, Change cipher spec (1):
-* TLSv1.2 (OUT), TLS header, Supplemental data (23):
-* TLSv1.3 (OUT), TLS handshake, Certificate (11):
-* TLSv1.2 (OUT), TLS header, Supplemental data (23):
-* TLSv1.3 (OUT), TLS handshake, Finished (20):
-* SSL connection using TLSv1.3 / TLS_AES_256_GCM_SHA384
-* ALPN, server accepted to use h2
-* Server certificate:
-*  subject: CN=server
-*  start date: May  1 14:20:59 2023 GMT
-*  expire date: Sep  1 14:20:59 3022 GMT
-*  issuer: CN=server
-*  SSL certificate verify result: self-signed certificate (18), continuing anyway.
-* Using HTTP2, server supports multiplexing
-* Connection state changed (HTTP/2 confirmed)
-* Copying HTTP/2 data in stream buffer to connection buffer after upgrade: len=0
-* TLSv1.2 (OUT), TLS header, Supplemental data (23):
-* TLSv1.2 (OUT), TLS header, Supplemental data (23):
-* TLSv1.2 (OUT), TLS header, Supplemental data (23):
-* Using Stream ID: 1 (easy handle 0x55d9aed1b560)
-* TLSv1.2 (OUT), TLS header, Supplemental data (23):
-> GET / HTTP/2
-> Host: localhost:8445
-> user-agent: curl/7.81.0
-> accept: */*
->
-* TLSv1.2 (IN), TLS header, Supplemental data (23):
-* TLSv1.3 (IN), TLS alert, bad certificate (554):
-* OpenSSL SSL_read: error:0A000412:SSL routines::sslv3 alert bad certificate, errno 0
-* Failed receiving HTTP2 data
-* OpenSSL SSL_write: SSL_ERROR_ZERO_RETURN, errno 0
-* Failed sending HTTP2 data
-* Connection #0 to host localhost left intact
+$ curl -k https://localhost:8445
+
 curl: (56) OpenSSL SSL_read: error:0A000412:SSL routines::sslv3 alert bad certificate, errno 0
 ```
 
