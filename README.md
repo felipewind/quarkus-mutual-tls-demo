@@ -1,10 +1,10 @@
 # quarkus-tls-demo
 
-Demonstration project to configure Transport Layer Security (TLS) on Quarkus' server an client applications.
+Demonstration project that shows how to configure Transport Layer Security (TLS) on Quarkus server and Quarkus client applications.
 
-In this project I explain the concepts of https, tls and mutual tls.
+First, I explain the concepts of https, tls and mutual tls. 
 
-Then, I execute a few tests showing how to configure one Quarkus's server and client applications to use mutual tls.
+Then, I execute a few tests showing how to configure one Quarkus server and Quarkus client applications to use mutual tls.
 
 - [Concepts](#concepts)
 - [Certificate Generation](#certificate-generation)
