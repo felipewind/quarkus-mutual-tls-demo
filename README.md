@@ -4,7 +4,7 @@ Demonstration project that shows how to configure Transport Layer Security (TLS)
 
 First, I explain the concepts of https, tls and mutual tls. 
 
-Then, I execute a few tests showing how to configure one Quarkus server and Quarkus client applications to use mutual tls.
+Then, I execute a few tests showing step by step how we configure and what are the effects when we don't configure the applications properly.
 
 - [Concepts](#concepts)
 - [Certificate Generation](#certificate-generation)
