@@ -1,13 +1,26 @@
 # quarkus-tls-demo
-Quarkus mutual Transport Layer Security (TLS) example - Truststore and Keystore configuration
+
+Demonstration project to configure Transport Layer Security (TLS) on Quarkus' server an client applications.
 
 # TLS
 
-> Transport Layer Security (TLS) is a cryptographic protocol designed to provide communications security over a computer network. The protocol is widely used in applications such as email, instant messaging, and voice over IP, but its use in securing HTTPS remains the most publicly visible.
+> Transport Layer Security (TLS) is a cryptographic protocol designed to provide communications security over a computer network. The protocol is widely used in applications such as email, instant messaging, and voice over IP, but its use in **securing HTTPS** remains the most publicly visible.[^1]
 
-> Transport Layer Security (TLS) certificates—most commonly known as SSL, or digital certificates—are the foundation of a safe and secure internet. TLS/SSL certificates secure internet connections by encrypting data sent between your browser, the website you’re visiting, and the website server. They ensure that data is transmitted privately and without modifications, loss or theft.
+> Transport Layer Security (TLS) certificates—most commonly known as SSL, or digital certificates—are the foundation of a safe and secure internet. TLS/SSL certificates secure internet connections by encrypting data sent between your browser, the website you’re visiting, and the website server. They ensure that data is transmitted privately and without modifications, loss or theft.[^2]: 
+
+**Mutual TLS** occurs when the client requires identification from the server and the server requires identification from the client as well.
+
+# HTTPS
+
+> HTTPS stands for Hypertext Transfer Protocol Secure, which is a protocol used to establish a secure and encrypted connection between a web browser (or other client) and a web server.
+> When you connect to a website using HTTPS, your browser and the server exchange cryptographic keys to establish a secure connection. This ensures that any data transmitted between the client and server is encrypted and protected from interception or tampering.
+
+To estabilish a https connection, the server must have a server certificate. When the client access the server, it receives the server certificate and check if this certificate is valid and issued by a trusted Certificate Authority (CA).
+
+
 
 # Certificate and Trustore generation
+
 
 
 ## Server Certificate 
@@ -148,7 +161,7 @@ https://quarkus.io/blog/quarkus-mutual-tls/
 
 https://quarkus.io/guides/http-reference
 
-https://en.wikipedia.org/wiki/Transport_Layer_Security
+[^1]: Wikipedia https://en.wikipedia.org/wiki/Transport_Layer_Security
 
-https://www.digicert.com/tls-ssl/tls-ssl-certificates#:~:text=Transport%20Layer%20Security%20(TLS)%20certificates,visiting%2C%20and%20the%20website%20server.
+[^2]: Digicert https://www.digicert.com/tls-ssl/tls-ssl-certificates#:~:text=Transport%20Layer%20Security%20(TLS)%20certificates,visiting%2C%20and%20the%20website%20server.
 
